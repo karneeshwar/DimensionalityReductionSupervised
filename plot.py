@@ -7,9 +7,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.colors import ListedColormap
+import os
 
-if len(sys.argv) != 2 and len(sys.argv) != 3:
-    print('usage : ', sys.argv[0], 'file_2dpoints [file_labels]')
+if len(sys.argv) != 3:
+    print('Incorrect arguments, rerun the program with correct number of arguments!')
     sys.exit()
 
 X = np.genfromtxt(sys.argv[1], delimiter=',', autostrip=True)
@@ -17,14 +18,13 @@ assert (X.shape[1] >= 2)  # X should be at least 2D. Take its first 2 columns
 x1 = X[:, 0]  # first column of X
 x2 = X[:, 1]  # second column of X
 
-if len(sys.argv) == 3:
-    y = list(np.genfromtxt(sys.argv[2], dtype='int'))
+y = np.genfromtxt(sys.argv[2], dtype='int')
 
-labels = list(np.unique(y))
 fig = plt.figure()
-col = ListedColormap(['r', 'b', 'g'])
-sca = plt.scatter(x1, x2, c=y, cmap=col)
-plt.legend(handles=sca.legend_elements()[0], labels=labels)
+col = ListedColormap(['r', 'g', 'b'])
+sca = plt.scatter(x1, x2, c=list(y), cmap=col)
+plt.legend(handles=sca.legend_elements()[0], labels=list(np.unique(y)))
+plt.title(os.path.splitext(sys.argv[1])[0])
 
 # fig, ax = plt.subplots()
 # ax.scatter(x1, x2)
@@ -34,7 +34,7 @@ plt.legend(handles=sca.legend_elements()[0], labels=labels)
 #         ax.annotate(txt, (x1[i], x2[i]))
 
 # save to pdf
-plotname = sys.argv[1] + '_plot'
+plotname = os.path.splitext(sys.argv[1])[0] + '_plot'
 pdf = PdfPages(plotname + '.pdf')
 pdf.savefig(fig)
 pdf.close()
