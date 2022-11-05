@@ -6,6 +6,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.colors import ListedColormap
 
 if len(sys.argv) != 2 and len(sys.argv) != 3:
     print('usage : ', sys.argv[0], 'file_2dpoints [file_labels]')
@@ -17,14 +18,20 @@ x1 = X[:, 0]  # first column of X
 x2 = X[:, 1]  # second column of X
 
 if len(sys.argv) == 3:
-    y = np.genfromtxt(sys.argv[2], dtype='int')
+    y = list(np.genfromtxt(sys.argv[2], dtype='int'))
 
-fig, ax = plt.subplots()
-ax.scatter(x1, x2)
+labels = list(np.unique(y))
+fig = plt.figure()
+col = ListedColormap(['r', 'b', 'g'])
+sca = plt.scatter(x1, x2, c=y, cmap=col)
+plt.legend(handles=sca.legend_elements()[0], labels=labels)
 
-if len(sys.argv) == 3:
-    for i, txt in enumerate(y):
-        ax.annotate(txt, (x1[i], x2[i]))
+# fig, ax = plt.subplots()
+# ax.scatter(x1, x2)
+#
+# if len(sys.argv) == 3:
+#     for i, txt in enumerate(y):
+#         ax.annotate(txt, (x1[i], x2[i]))
 
 # save to pdf
 plotname = sys.argv[1] + '_plot'
