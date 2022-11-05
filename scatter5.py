@@ -1,4 +1,4 @@
-# To minimize the mixture-class scatter
+# To minimize the between-class scatter
 # import statements:
 #   sys for defining and retrieving program arguments
 #   numpy to import and perform matrix operations with given data
@@ -6,19 +6,37 @@ import sys as system
 import numpy as numpython
 
 
-# Function: mixture_scatter
-# Parameters: matrix = input data
-#   To compute the mixture class scatter matrix
-def mixture_scatter(matrix):
-    # Compute average and subtract it from the input matrix
+# Function: between_scatter
+# Parameters: matrix = input data, groups = input labels
+#   To compute the between class scatter matrix
+def between_scatter(matrix, groups):
+    # Compute average
     avg = numpython.mean(matrix, axis=1)
-    matrix_avg = matrix - avg
 
-    # Compute the Mixture class matrix
-    M_matrix = matrix_avg * matrix_avg.T
+    # Compute group average based on labels
+    unique_groups = numpython.unique(groups)
+    group_count = unique_groups.shape[0]
+    rows, columns = matrix.shape
+    group_sum = numpython.zeros([rows, group_count])
+    group_size = numpython.zeros([1, group_count])
 
-    # Return Mixture class matrix
-    return M_matrix
+    for group in unique_groups:
+        for col in range(columns):
+            if groups[col] == group:
+                for row in range(rows):
+                    group_sum[row, group-1] += matrix[row, col]
+                group_size[0, group-1] += 1
+
+    group_avg = numpython.asmatrix(group_sum/group_size)
+
+    # Compute the Between class matrix
+    size = avg.shape[0]
+    B_matrix = numpython.zeros([size, size])
+    for count in range(group_count):
+        B_matrix += group_size[0, count] * (group_avg[:, count] - avg) * (group_avg[:, count] - avg).T
+
+    # return Between class matrix
+    return B_matrix
 
 
 # Function: minimize_scatter
@@ -26,7 +44,7 @@ def mixture_scatter(matrix):
 #   To find the top 2 eigen vectors that minimizes the given scatter
 def minimize_scatter(matrix, reduce_to=2):
     # Compute eigen values and vectors of the symmetric matrix B
-    eigen_values, eigen_vectors = numpython.linalg.eigh(matrix)
+    eigen_values, eigen_vectors = numpython.linalg.eigh(numpython.asarray(matrix))
 
     # sort the eigen values and vectors in increasing order of the eigen values
     pivot = numpython.argsort(eigen_values)
@@ -64,12 +82,19 @@ if __name__ == '__main__':
         except IOError:
             print('Input data file not found')
             system.exit()
+    while 1:
+        try:
+            label = numpython.genfromtxt(system.argv[2], delimiter=',', autostrip=True, dtype='int')
+            break
+        except IOError:
+            print('Input labels file not found')
+            system.exit()
 
-    # Call the required function to compute the mixture class matrix
-    mixture_scatter_matrix = mixture_scatter(data)
+    # Call the required function to compute the between matrix
+    between_scatter_matrix = between_scatter(data, label)
 
     # Call the required function to compute eigen vectors that minimizes the mixture scatter
-    vectors = minimize_scatter(mixture_scatter_matrix)
+    vectors = minimize_scatter(between_scatter_matrix)
 
     # Call the function to compute the final reduced data
     reduced_data = reduce_data(vectors, data)
