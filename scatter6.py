@@ -44,7 +44,7 @@ def between_scatter(matrix, groups):
 #   To find the top 2 eigen vectors that maximizes the given scatter
 def maximize_scatter(matrix, reduce_to=2):
     # Compute eigen values and vectors of the symmetric matrix B
-    eigen_values, eigen_vectors = numpython.linalg.eigh(numpython.asarray(matrix))
+    eigen_values, eigen_vectors = numpython.linalg.eigh(matrix)
 
     # sort the eigen values and vectors in increasing order of the eigen values
     pivot = numpython.argsort(eigen_values)[::-1]
