@@ -34,13 +34,17 @@ def between_scatter(matrix, groups):
     rows, columns = matrix.shape
     group_sum = numpython.zeros([rows, group_count])
     group_size = numpython.zeros([1, group_count])
+    group_index = {}
+    group_counter = 0
 
     for group in unique_groups:
+        group_index[group] = group_counter
+        group_counter += 1
         for col in range(columns):
             if groups[col] == group:
                 for row in range(rows):
-                    group_sum[row, group-1] += matrix[row, col]
-                group_size[0, group-1] += 1
+                    group_sum[row, group_index[group]] += matrix[row, col]
+                group_size[0, group_index[group]] += 1
 
     group_avg = numpython.asmatrix(group_sum/group_size)
 
