@@ -1,9 +1,24 @@
-# To minimize the between-class scatter
+# To minimize the ratio of between-class scatter and within-class scatter
 # import statements:
 #   sys for defining and retrieving program arguments
 #   numpy to import and perform matrix operations with given data
 import sys as system
 import numpy as numpython
+
+
+# Function: mixture_scatter
+# Parameters: matrix = input data
+#   To compute the mixture class scatter matrix
+def mixture_scatter(matrix):
+    # Compute average and subtract it from the input matrix
+    avg = numpython.mean(matrix, axis=1)
+    matrix_avg = matrix - avg
+
+    # Compute the Mixture class matrix
+    M_matrix = matrix_avg * matrix_avg.T
+
+    # Return Mixture class matrix
+    return M_matrix
 
 
 # Function: between_scatter
@@ -41,6 +56,23 @@ def between_scatter(matrix, groups):
 
     # return Between class matrix
     return B_matrix
+
+
+# Function: within_scatter
+# Parameters: matrix = input data, groups = input labels
+#   To compute the within class scatter matrix
+def within_scatter(matrix, groups):
+    # Compute Mixture class matrix
+    M_matrix = mixture_scatter(matrix)
+
+    # Compute Between class matrix
+    B_matrix = between_scatter(matrix, groups)
+
+    # Compute Within class matrix
+    W_matrix = M_matrix - B_matrix
+
+    # Return Within class matrix
+    return B_matrix, W_matrix
 
 
 # Function: minimize_scatter
@@ -94,11 +126,14 @@ if __name__ == '__main__':
             print('Input labels file not found')
             system.exit()
 
-    # Call the required function to compute the between matrix
-    between_scatter_matrix = between_scatter(data, label)
+    # Call the required function to compute the within matrix
+    between_scatter_matrix, within_scatter_matrix = within_scatter(data, label)
+
+    # Compute the matrix that corresponds to ratio of between-class and within-class
+    ratio_matrix = numpython.linalg.inv(within_scatter_matrix).dot(between_scatter_matrix)
 
     # Call the required function to compute eigen vectors that minimizes the mixture scatter
-    vectors = minimize_scatter(between_scatter_matrix)
+    vectors = minimize_scatter(ratio_matrix)
 
     # Call the function to compute the final reduced data
     reduced_data = reduce_data(vectors, data)

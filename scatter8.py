@@ -1,9 +1,24 @@
-# To minimize the between-class scatter
+# To maximize the ratio of between-class scatter and within-class scatter
 # import statements:
 #   sys for defining and retrieving program arguments
 #   numpy to import and perform matrix operations with given data
 import sys as system
 import numpy as numpython
+
+
+# Function: mixture_scatter
+# Parameters: matrix = input data
+#   To compute the mixture class scatter matrix
+def mixture_scatter(matrix):
+    # Compute average and subtract it from the input matrix
+    avg = numpython.mean(matrix, axis=1)
+    matrix_avg = matrix - avg
+
+    # Compute the Mixture class matrix
+    M_matrix = matrix_avg * matrix_avg.T
+
+    # Return Mixture class matrix
+    return M_matrix
 
 
 # Function: between_scatter
@@ -43,15 +58,32 @@ def between_scatter(matrix, groups):
     return B_matrix
 
 
-# Function: minimize_scatter
+# Function: within_scatter
+# Parameters: matrix = input data, groups = input labels
+#   To compute the within class scatter matrix
+def within_scatter(matrix, groups):
+    # Compute Mixture class matrix
+    M_matrix = mixture_scatter(matrix)
+
+    # Compute Between class matrix
+    B_matrix = between_scatter(matrix, groups)
+
+    # Compute Within class matrix
+    W_matrix = M_matrix - B_matrix
+
+    # Return Within class matrix
+    return B_matrix, W_matrix
+
+
+# Function: maximize_scatter
 # Parameters: matrix = input data, reduce_to = number of dimensions to reduce to (default = 2)
-#   To find the top 2 eigen vectors that minimizes the given scatter
-def minimize_scatter(matrix, reduce_to=2):
+#   To find the top 2 eigen vectors that maximizes the given scatter
+def maximize_scatter(matrix, reduce_to=2):
     # Compute eigen values and vectors of the symmetric matrix B
     eigen_values, eigen_vectors = numpython.linalg.eigh(matrix)
 
     # sort the eigen values and vectors in increasing order of the eigen values
-    pivot = numpython.argsort(eigen_values)
+    pivot = numpython.argsort(eigen_values)[::-1]
     eigen_values = eigen_values[pivot]
     eigen_vectors = eigen_vectors[:, pivot]
 
@@ -94,11 +126,14 @@ if __name__ == '__main__':
             print('Input labels file not found')
             system.exit()
 
-    # Call the required function to compute the between matrix
-    between_scatter_matrix = between_scatter(data, label)
+    # Call the required function to compute the within matrix
+    between_scatter_matrix, within_scatter_matrix = within_scatter(data, label)
 
-    # Call the required function to compute eigen vectors that minimizes the mixture scatter
-    vectors = minimize_scatter(between_scatter_matrix)
+    # Compute the matrix that corresponds to ratio of between-class and within-class
+    ratio_matrix = numpython.linalg.inv(within_scatter_matrix).dot(between_scatter_matrix)
+
+    # Call the required function to compute eigen vectors that maximizes the mixture scatter
+    vectors = maximize_scatter(ratio_matrix)
 
     # Call the function to compute the final reduced data
     reduced_data = reduce_data(vectors, data)
