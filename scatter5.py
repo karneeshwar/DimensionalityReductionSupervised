@@ -48,7 +48,7 @@ def between_scatter(matrix, groups):
 #   To find the top 2 eigen vectors that minimizes the given scatter
 def minimize_scatter(matrix, reduce_to=2):
     # Compute eigen values and vectors of the symmetric matrix B
-    eigen_values, eigen_vectors = numpython.linalg.eigh(matrix)
+    eigen_values, eigen_vectors = numpython.linalg.eig(matrix)
 
     # sort the eigen values and vectors in increasing order of the eigen values
     pivot = numpython.argsort(eigen_values)
@@ -67,7 +67,7 @@ def minimize_scatter(matrix, reduce_to=2):
 #   To reduce the input data using the top 2 selected vectors from the eigen value decomposition
 def reduce_data(v, matrix):
     # return the reduced data
-    return v.T * matrix
+    return (v.T * matrix).real
 
 
 # Function: main
