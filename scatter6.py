@@ -50,7 +50,7 @@ def maximize_scatter(matrix, reduce_to=2):
     # Compute eigen values and vectors of the symmetric matrix B
     eigen_values, eigen_vectors = numpython.linalg.eigh(matrix)
 
-    # sort the eigen values and vectors in increasing order of the eigen values
+    # sort the eigen values and vectors in decreasing order of the eigen values
     pivot = numpython.argsort(eigen_values)[::-1]
     eigen_values = eigen_values[pivot]
     eigen_vectors = eigen_vectors[:, pivot]
